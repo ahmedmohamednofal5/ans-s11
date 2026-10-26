@@ -1,0 +1,126 @@
+using System;
+using System.Collections.Generic;
+
+namespace Assignment08
+{
+    #region Section 01: Book System Implementation
+
+    public class Book
+    {
+        public string ISBN { get; set; }
+        public string Title { get; set; }
+        public string[] Authors { get; set; }
+        public DateTime PublicationDate { get; set; }
+        public decimal Price { get; set; }
+
+        public Book(string _ISBN, string _Title, string[] _Authors, DateTime _PublicationDate, decimal _Price)
+        {
+            ISBN = _ISBN;
+            Title = _Title;
+            Authors = _Authors;
+            PublicationDate = _PublicationDate;
+            Price = _Price;
+        }
+
+        public override string ToString()
+        {
+            return $"ISBN: {ISBN}, Title: {Title}, Authors: {string.Join(", ", Authors)}, Date: {PublicationDate:yyyy-MM-dd}, Price: ${Price}";
+        }
+    }
+
+    public class BookFunctions
+    {
+        public static string GetTitle(Book B)
+        {
+            return B?.Title ?? "N/A";
+        }
+
+        public static string GetAuthors(Book B)
+        {
+            return B?.Authors != null ? string.Join(", ", B.Authors) : "N/A";
+        }
+
+        public static string GetPrice(Book B)
+        {
+            return B != null ? $"{B.Price:C}" : "$0.00";
+        }
+    }
+
+    // 1. User-Defined Delegate matching BookFunctions signature
+    public delegate string BookDelegate(Book B);
+
+    public class LibraryEngine
+    {
+        // Parameterized with User-Defined Delegate
+        public static void ProcessBooks(List<Book> bList, BookDelegate fPtr)
+        {
+            foreach (Book B in bList)
+            {
+                Console.WriteLine(fPtr(B));
+            }
+        }
+
+        // Parameterized with Built-In Delegate (Func<Book, string>)
+        public static void ProcessBooks(List<Book> bList, Func<Book, string> fPtr)
+        {
+            foreach (Book B in bList)
+            {
+                Console.WriteLine(fPtr(B));
+            }
+        }
+    }
+
+    #endregion
+
+    #region Section 02: Order Processing System & Bonus Challenge
+
+    public class Order
+    {
+        public int Id { get; set; }
+        public string CustomerName { get; set; }
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    // Part 1: User-Defined Delegate
+    public delegate decimal PriceCalculator(Order order);
+
+    // Pricing Strategies for Bonus Challenge
+    public static class DiscountStrategies
+    {
+        public static decimal NormalPricing(Order order) => order.Price * order.Quantity;
+        public static decimal TenPercentDiscount(Order order) => (order.Price * order.Quantity) * 0.90m;
+        public static decimal TwentyPercentDiscount(Order order) => (order.Price * order.Quantity) * 0.80m;
+        public static decimal VipDiscount(Order order) => (order.Price * order.Quantity) * 0.70m;
+    }
+
+    public class OrderService
+    {
+        // Part 5: Event Declaration using Action<Order>
+        public event Action<Order> OrderProcessed;
+
+        // Part 1: Calculate Order Price using User-Defined Delegate
+        public decimal CalculateOrderPrice(Order order, PriceCalculator calculator)
+        {
+            return calculator(order);
+        }
+
+        // Part 2 & Bonus: Calculate Order Price using Built-in Func<Order, decimal>
+        public decimal CalculateOrderPrice(Order order, Func<Order, decimal> calculator)
+        {
+            return calculator(order);
+        }
+
+        // Part 3: Validate Order using Predicate<Order>
+        public bool ValidateOrder(Order order, Predicate<Order> validationRule)
+        {
+            return validationRule(order);
+        }
+
+        // Part 4: Process Order Action using Action<Order>
+        public void ProcessOrder(Order order, Action<Order> action)
+        {
+            action(order);
+        }
+
+        // Part 5 & 6: Raise Event upon Order Processing
